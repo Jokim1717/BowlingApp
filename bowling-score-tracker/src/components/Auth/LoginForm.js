@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase/firebase";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -21,7 +22,7 @@ const LoginForm = () => {
     const { email, password } = formData;
 
     try {
-      await auth.signInWithEmailAndPassword(email, password);
+      await signInWithEmailAndPassword(auth, email, password);
       console.log("User logged in successfully!");
       setFormData({
         email: "",
