@@ -1,0 +1,36 @@
+/* ScoreTracking.css */
+
+.frame-container {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .frame-pair {
+    margin: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .frame-box {
+    position: relative;
+    border: 1px solid #000;
+    padding: 40px ;
+    margin: 5px;
+    text-align: center;
+  }
+  
+  .score-box {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #ddd;
+    padding: 5px;
+  }
+  
+  .frame-number {
+    text-align: center;
+    margin-bottom: 5px;
+  }
+  

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from 'react-router-dom';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase/firebase";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -67,6 +68,9 @@ const LoginForm = () => {
           Login
         </button>
       </form>
+      <p>
+        Don't have an account? <Link to="/register">Register here</Link>
+      </p>
     </div>
   );
 };
