@@ -1,4 +1,4 @@
-/* ScoreTracking.css */
+/* ScoreTracking.css
 
 .frame-container {
     display: flex;
@@ -7,7 +7,7 @@
   }
   
   .frame-pair {
-    margin: 20px;
+    margin: 10px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -16,7 +16,7 @@
   .frame-box {
     position: relative;
     border: 1px solid #000;
-    padding: 40px ;
+    padding: 50px ;
     margin: 5px;
     text-align: center;
   }
@@ -26,11 +26,82 @@
     top: 0;
     right: 0;
     background-color: #ddd;
-    padding: 5px;
+    padding: 20px;
   }
   
   .frame-number {
     text-align: center;
     margin-bottom: 5px;
   }
-  
+   */
+
+
+.frameParent {
+    display: flex;
+    flex-direction: row;
+    width: 70%;
+    height: auto;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.frame {
+    border-left: 1px solid black;
+    border-bottom: 1px solid black;
+    border-top: 1px solid black;
+    display: flex;
+    flex-flow: row wrap;
+    width: 10%;
+    height: 70px;
+    font-size: 1em;
+}
+
+.throw1 {
+    flex-basis: 50%;
+}
+
+.throw2 {
+    border-left: 1px solid black;
+    border-bottom: 1px solid black;
+    height: 35px;
+    flex-basis: 50%;
+}
+
+.frame10 {
+    border: 1px solid black;
+    display: flex;
+    flex-flow: row wrap;
+    width: 15%;
+    height: 70px;
+    font-size: 1em;
+}
+
+.frame10throw1 {
+    flex-basis: 33%;
+}
+
+.frame10throw2 {
+    border-left: 1px solid black;
+    border-bottom: 1px solid black;
+    height: 35px;
+    flex-basis: 33%;
+}
+
+.frame10throw3 {
+    border-left: 1px solid black;
+    border-bottom: 1px solid black;
+    height: 35px;
+    flex-basis: 33%;
+}
+
+.totalScore {
+    border-bottom: 1px solid black;
+    border-right: 1px solid black;
+    border-top: 1px solid black;
+    display: flex;
+    flex-flow: row wrap;
+    width: 15%;
+    height: 70px;
+    font-size: 1em;
+}
+
