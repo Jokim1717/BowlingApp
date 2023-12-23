@@ -8,8 +8,8 @@ const ScoreCard = () => {
   const [scores, setScores] = useState(Array(10).fill(0));
   const [currentFrame, setCurrentFrame] = useState(0);
   const [currentThrow, setCurrentThrow] = useState(1);
-  const [lastShotType, setLastShotType] = useState(null);
-  const [secondLastShotType, setSecondLastShotType] = useState(null);
+  const [lastShotType, setLastShotType] = useState(0);
+  const [secondLastShotType, setSecondLastShotType] = useState(0);
 
   const handleThrow10 = (pins) => {};
 
@@ -20,42 +20,75 @@ const ScoreCard = () => {
     } else {
       //FIRST THROW
       if (currentThrow === 1) {
+        //STRIKE
         if (pins === 10) {
-          //if current shot is strike and previous shot was spare
-          console.log("strike clicked");
-          swapLastAndSecondLast();
-          updateScoreAtIndex(currentFrame - 1, 10 - secondLastShotType + pins);
-          updateScoreAtIndex(currentFrame, pins);
-          addPrevFrame(currentFrame);
-          setLastShotType(10);
-          setCurrentFrame(currentFrame + 1);
-          setCurrentThrow(1);
+          //if last two shots were a strike
+          if (secondLastShotType === 10) {
+            if (currentFrame === 2) {
+              setScoreAtIndex(currentFrame - 2, 30);
+              swapLastAndSecondLast();
+              setLastShotType(10);
+              updateScoreAtIndex(currentFrame, 10);
+              setCurrentFrame(currentFrame + 1);
+            } else {
+              console.log("erroring");
+              setScoreAtIndex(currentFrame - 2, 30);
+              addPrevFrame(currentFrame - 2);
+              swapLastAndSecondLast();
+              setLastShotType(10);
+              updateScoreAtIndex(currentFrame, 10);
+              setCurrentFrame(currentFrame + 1);
+            }
+          } else {
+            //if current shot is a strike and last shot was a spare
+            if (lastShotType === 11) {
+              swapLastAndSecondLast();
+              setScoreAtIndex(currentFrame - 1, 20);
+              addPrevFrame(currentFrame - 1);
+              setLastShotType(10);
+              setCurrentFrame(currentFrame + 1);
+            } else if (lastShotType === 10) {
+              //if current shot is a strike and the last shot was a strike
+              swapLastAndSecondLast();
+              updateScoreAtIndex(currentFrame - 1, 10);
+              updateScoreAtIndex(currentFrame, 10);
+              setLastShotType(10);
+              setCurrentFrame(currentFrame + 1);
+            } else {
+              //if current shot is strike on normal previous shots
+              console.log("hihihi");
+              swapLastAndSecondLast();
+              updateScoreAtIndex(currentFrame, 10);
+              setLastShotType(10);
+              setCurrentFrame(currentFrame + 1);
+            }
+          }
         } else {
           //NORMAL SHOT
           console.log("normal shot clicked");
           //if current shot is normal and previous shot was spare
+
           if (lastShotType === 11) {
-            setScoreAtIndex(currentFrame - 1, (lastShotType - 1) + pins)
-            addPrevFrame(currentFrame - 1)
+            setScoreAtIndex(currentFrame - 1, lastShotType - 1 + pins);
+            addPrevFrame(currentFrame - 1);
             swapLastAndSecondLast();
-            updateScoreAtIndex(currentFrame, pins)
-            setLastShotType(pins)
-            setCurrentThrow(2)
+            updateScoreAtIndex(currentFrame, pins);
+            setLastShotType(pins);
+            setCurrentThrow(2);
           }
           //if current shot is normal and previous shot was strike
           else if (lastShotType === 10) {
-            console.log("testing");
             swapLastAndSecondLast();
             updateScoreAtIndex(currentFrame, pins);
             setLastShotType(pins);
             setCurrentThrow(2);
           } else {
-          //if current shot is normal and previous shot is normal
-          swapLastAndSecondLast();
-          updateScoreAtIndex(currentFrame, pins);
-          setLastShotType(pins);
-          // addPrevFrame(currentFrame);
-          setCurrentThrow(2);
+            //if current shot is normal and previous shot is normal
+            swapLastAndSecondLast();
+            updateScoreAtIndex(currentFrame, pins);
+            setLastShotType(pins);
+            // addPrevFrame(currentFrame);
+            setCurrentThrow(2);
           }
         }
       } else {
@@ -73,14 +106,22 @@ const ScoreCard = () => {
           setCurrentThrow(1);
           setLastShotType(pins);
         } else {
-          //normal shot
-          console.log("normal shot clicked");
-          swapLastAndSecondLast();
-          updateScoreAtIndex(currentFrame, pins);
-          setLastShotType(pins);
-          setCurrentThrow(1);
-          setCurrentFrame(currentFrame + 1);
-          addPrevFrame(currentFrame);
+          if (currentFrame === 0) {
+            swapLastAndSecondLast();
+            updateScoreAtIndex(currentFrame, pins);
+            setLastShotType(pins);
+            setCurrentFrame(currentFrame + 1);
+            setCurrentThrow(1);
+          } else {
+            //normal shot
+            console.log("error clicked");
+            swapLastAndSecondLast();
+            updateScoreAtIndex(currentFrame, pins);
+            setLastShotType(pins);
+            setCurrentThrow(1);
+            setCurrentFrame(currentFrame + 1);
+            addPrevFrame(currentFrame);
+          }
         }
       }
     }
@@ -88,7 +129,7 @@ const ScoreCard = () => {
 
   const addPrevFrame = (frameNumber) => {
     setScores((prevScores) => {
-      if (currentFrame === 1) {
+      if (currentFrame === 0) {
         const copyScores = [...prevScores];
         const currentFrameTotal = copyScores[frameNumber];
         copyScores[frameNumber] = currentFrameTotal;
@@ -97,9 +138,9 @@ const ScoreCard = () => {
         const indexOfPrevFrame = frameNumber - 1;
         const copyScores = [...prevScores];
         const latestScore = copyScores[indexOfPrevFrame];
-        console.log('latest score: ' + latestScore);
+        console.log("latest score: " + latestScore);
         const currentFrameTotal = copyScores[frameNumber];
-        console.log('current frame total: ' + currentFrameTotal)
+        console.log("current frame total: " + currentFrameTotal);
         const finalValue = latestScore + currentFrameTotal;
         copyScores[frameNumber] = finalValue;
         return copyScores;
@@ -114,7 +155,7 @@ const ScoreCard = () => {
 
       // Update the value at the specified index
       updatedScores[indexToUpdate] += newValue;
-      console.log(updatedScores[indexToUpdate])
+      console.log(updatedScores[indexToUpdate]);
       // Return the updated array
       return updatedScores;
     });
@@ -127,7 +168,7 @@ const ScoreCard = () => {
 
       // Update the value at the specified index
       updatedScores[indexToUpdate] = newValue;
-      console.log(updatedScores[indexToUpdate])
+      console.log(updatedScores[indexToUpdate]);
       // Return the updated array
       return updatedScores;
     });
