@@ -5,7 +5,7 @@ import Button from "react-bootstrap/Button";
 const ScoreCard = () => {
   const frames = Array.from({ length: 9 }, (_, index) => index + 1);
 
-  const [scores, setScores] = useState(Array(10).fill(0));
+  const [scores, setScores] = useState(Array(10).fill(null));
   const [currentFrame, setCurrentFrame] = useState(0);
   const [currentThrow, setCurrentThrow] = useState(1);
   const [lastShotType, setLastShotType] = useState(0);
