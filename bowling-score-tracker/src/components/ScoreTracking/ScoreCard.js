@@ -42,11 +42,18 @@ const ScoreCard = () => {
           } else {
             //if current shot is a strike and last shot was a spare
             if (lastShotType === 11) {
+              if (currentFrame === 1) {
+                swapLastAndSecondLast()
+                setScoreAtIndex(0, 20)
+                setLastShotType(11);
+                setCurrentFrame(currentFrame + 1);
+              } else {
               swapLastAndSecondLast();
               setScoreAtIndex(currentFrame - 1, 20);
               addPrevFrame(currentFrame - 1);
               setLastShotType(10);
               setCurrentFrame(currentFrame + 1);
+              }
             } else if (lastShotType === 10) {
               //if current shot is a strike and the last shot was a strike
               swapLastAndSecondLast();
