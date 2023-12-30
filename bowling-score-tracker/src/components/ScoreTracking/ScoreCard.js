@@ -1,12 +1,16 @@
 import "./ScoreCard.css";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { auth } from "../../firebase/firebase";
+import { auth, db } from "../../firebase/firebase";
 import { signOut } from "firebase/auth";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { addDoc, collection, getDocs, where, query } from "firebase/firestore";
 
 const ScoreCard = () => {
+  const [user] = useAuthState(auth);
+
   const frames = Array.from({ length: 9 }, (_, index) => index + 1);
 
   const [scores, setScores] = useState(Array(10).fill(null));
@@ -18,18 +22,67 @@ const ScoreCard = () => {
   const [secondLastShotType, setSecondLastShotType] = useState(0);
   const [gameOverModal, setGameOverModal] = useState(false);
 
+  const [userScores, setUserScores] = useState([]);
+
+  // fetches the user-specific scores from the database
+  const fetchUserScores = async () => {
+    const userScoresCollection = collection(db, "scores");
+    const userScoresQuery = query(
+      userScoresCollection,
+      where("userId", "==", auth.currentUser.uid)
+    );
+
+    const userScoresSnapshot = await getDocs(userScoresQuery);
+
+    const userScores = [];
+
+    userScoresSnapshot.forEach((doc) => {
+      console.log(doc.data().score);
+      userScores.push(doc.data().score);
+    });
+
+    console.log("Fetched user scores:", userScores);
+
+    return userScores;
+  };
+
+  // on each rendering, we're gonna fetch scores
+  useEffect(() => {
+    const fetchScores = async () => {
+      const fetchedUserScores = await fetchUserScores();
+      setUserScores(fetchedUserScores);
+    };
+
+    if (user) {
+      fetchScores();
+    }
+  }, [user]);
+
   const navigate = useNavigate();
 
+  // saves score to the database
+  const saveScore = async () => {
+    try {
+      const scoresCollection = collection(db, "scores");
+      // Add the user's score to the collection
+      await addDoc(scoresCollection, {
+        userId: auth.currentUser.uid,
+        score: scores[9],
+        timestamp: new Date(),
+      });
 
-  const addToHistory = () => {
-    console.log('add to history')
-  }
+      console.log("Score saved successfully!");
+    } catch (error) {
+      console.error("Error saving score:", error);
+    }
+  };
 
+  //displays game over modal
   const displayGameEnd = () => {
-    console.log('hello')
     setGameOverModal(true);
   };
 
+  // handles closing the modal
   const handleClose = () => setGameOverModal(false);
 
   // handles 10th frame logic
@@ -95,11 +148,20 @@ const ScoreCard = () => {
             // setCurrentFrame(currentFrame + 1);
           }
         }
+
+      //NORMAL SHOT
       } else if (pins !== 11 || pins !== 10) {
         addEachScore(currentShotNumber, pins);
-        //NORMAL SHOT
+        //8th frmae, 9th frame strike, 10th first shot normal
+        if (lastShotType === 10 && secondLastShotType) {
+          swapLastAndSecondLast();
+          updateScoreAtIndex(currentFrame - 2, 10 + pins);
+          addPrevFrame(currentFrame - 2);
+          updateScoreAtIndex(currentFrame - 1, 10 + pins);
+          setLastShotType(pins);
+          setCurrentThrow(2);
+        }
         //if current shot is normal and previous shot was spare
-
         if (lastShotType === 11) {
           setScoreAtIndex(currentFrame - 1, lastShotType - 1 + pins);
           addPrevFrame(currentFrame - 1);
@@ -128,6 +190,7 @@ const ScoreCard = () => {
       setCurrentShotNumber(19);
     } else if (currentThrow === 2) {
       console.log("10th frame 2nd shot");
+      //STRIKE
       if (pins === 10) {
         addEachScore(currentShotNumber, pins);
         //if last two shots were a strike
@@ -180,8 +243,8 @@ const ScoreCard = () => {
         //9th frame strike, 10th frame first normal shot, second normal shot (game ends)
         else if (secondLastShotType === 10) {
           swapLastAndSecondLast();
-          setScoreAtIndex(currentFrame - 2, 10 + lastShotType + pins);
-          addPrevFrame(currentFrame - 2);
+          setScoreAtIndex(currentFrame - 1, 10 + lastShotType + pins);
+          addPrevFrame(currentFrame - 1);
           updateScoreAtIndex(currentFrame, pins);
           addPrevFrame(currentFrame);
           setLastShotType(pins);
@@ -210,7 +273,7 @@ const ScoreCard = () => {
           setLastShotType(10);
           setCurrentFrame(10);
           displayGameEnd();
-          console.log('game shoudlve ended')
+          console.log("game shoudlve ended");
         } else {
           //if current shot is a strike and last shot was a spare
           if (lastShotType === 11) {
@@ -238,7 +301,7 @@ const ScoreCard = () => {
         //if third shot is normal (following 2nd shot strike)
         if (lastShotType === 10) {
           swapLastAndSecondLast();
-          updateScoreAtIndex(currentFrame, 20 + pins);
+          updateScoreAtIndex(currentFrame, pins);
           addPrevFrame(currentFrame);
           setSecondLastShotType(pins);
           setCurrentFrame(10);
@@ -269,8 +332,9 @@ const ScoreCard = () => {
         if (pins === 10) {
           addEachScore(currentShotNumber + 1, pins);
           //if last two shots were a strike
-          if (secondLastShotType === 10) {
+          if (lastShotType === 10 && secondLastShotType === 10) {
             if (currentFrame === 2) {
+              console.log("hm");
               setScoreAtIndex(currentFrame - 2, 30);
               swapLastAndSecondLast();
               setLastShotType(10);
@@ -278,9 +342,9 @@ const ScoreCard = () => {
               setCurrentFrame(currentFrame + 1);
               setCurrentShotNumber(currentShotNumber + 2);
             } else {
+              swapLastAndSecondLast();
               setScoreAtIndex(currentFrame - 2, 30);
               addPrevFrame(currentFrame - 2);
-              swapLastAndSecondLast();
               setLastShotType(10);
               updateScoreAtIndex(currentFrame, 10);
               setCurrentFrame(currentFrame + 1);
@@ -342,6 +406,18 @@ const ScoreCard = () => {
               setCurrentThrow(2);
               setCurrentShotNumber(currentShotNumber + 1);
             }
+          } else if (lastShotType === 10 && secondLastShotType === 10) {
+            console.log("hiiiiii");
+            swapLastAndSecondLast();
+            updateScoreAtIndex(currentFrame - 2, pins);
+            if (currentFrame !== 2) {
+              addPrevFrame(currentFrame - 2);
+            }
+            updateScoreAtIndex(currentFrame - 1, pins);
+            updateScoreAtIndex(currentFrame, pins);
+            setLastShotType(pins);
+            setCurrentThrow(2);
+            setCurrentShotNumber(currentShotNumber + 1);
           }
           //if current shot is normal and previous shot was strike
           else if (lastShotType === 10) {
@@ -368,7 +444,10 @@ const ScoreCard = () => {
         if (pins === 11) {
           //if you spare on a strike
           if (secondLastShotType === 10) {
-            updateScoreAtIndex(currentFrame - 1, secondLastShotType);
+            setScoreAtIndex(currentFrame - 1, 20);
+            if (currentFrame !== 1) {
+              addPrevFrame(currentFrame - 1);
+            }
           }
           console.log("spare clicked");
           swapLastAndSecondLast();
@@ -386,13 +465,16 @@ const ScoreCard = () => {
             setCurrentThrow(1);
             setCurrentShotNumber(currentShotNumber + 1);
           } else {
+            //if previous frame was strike
             if (secondLastShotType === 10) {
               console.log("hi is it here");
               swapLastAndSecondLast();
               updateScoreAtIndex(currentFrame - 1, pins);
+
               if (currentFrame !== 1) {
                 addPrevFrame(currentFrame - 1);
               }
+
               updateScoreAtIndex(currentFrame, pins);
               addPrevFrame(currentFrame);
               setLastShotType(pins);
@@ -400,7 +482,6 @@ const ScoreCard = () => {
               setCurrentThrow(1);
               setCurrentShotNumber(currentShotNumber + 1);
             } else {
-              //normal shot
               console.log("error clicked");
               swapLastAndSecondLast();
               updateScoreAtIndex(currentFrame, pins);
@@ -486,14 +567,14 @@ const ScoreCard = () => {
     setLastShotType(null); // Reset lastShotType after swapping
   };
 
-
   const userSignOut = () => {
-    signOut(auth).then(() => {
-      navigate('/login')
-      console.log('signout successful')
-    }).catch(error => console.log(error))
-  }
-
+    signOut(auth)
+      .then(() => {
+        navigate("/");
+        console.log("signout successful");
+      })
+      .catch((error) => console.log(error));
+  };
 
   return (
     <div>
@@ -548,6 +629,15 @@ const ScoreCard = () => {
         </Button>
       </div>
 
+      <h3>Your Scores:</h3>
+      <ul>
+        {userScores.map((score, index) => (
+          <li key={index}>
+            Score {index + 1}: {score}
+          </li>
+        ))}
+      </ul>
+
       <Modal show={gameOverModal} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Game Over!</Modal.Title>
@@ -557,12 +647,11 @@ const ScoreCard = () => {
           {/* You can customize the modal content as needed */}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={addToHistory}>
-            Add to History
+          <Button variant="primary" onClick={saveScore}>
+            Save Score
           </Button>
         </Modal.Footer>
       </Modal>
-
 
       <Button onClick={userSignOut}>Sign Out</Button>
     </div>

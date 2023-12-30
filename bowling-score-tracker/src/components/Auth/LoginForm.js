@@ -33,7 +33,7 @@ const LoginForm = () => {
         password: "",
       });
 
-      navigate('/');
+      navigate('/score-card');
     } catch (error) {
       console.error("Login failed:", error.message);
     }
