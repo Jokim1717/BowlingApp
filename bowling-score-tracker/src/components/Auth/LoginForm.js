@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase/firebase";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -9,6 +10,8 @@ const LoginForm = () => {
     email: "",
     password: "",
   });
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
@@ -29,6 +32,8 @@ const LoginForm = () => {
         email: "",
         password: "",
       });
+
+      navigate('/');
     } catch (error) {
       console.error("Login failed:", error.message);
     }

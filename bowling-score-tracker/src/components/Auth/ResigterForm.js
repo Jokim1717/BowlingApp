@@ -24,13 +24,13 @@ const RegisterForm = () => {
 
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      console.log("User logged in successfully!");
+      console.log("User registered successfully!");
       setFormData({
         email: "",
         password: "",
       });
     } catch (error) {
-      console.error("Login failed:", error.message);
+      console.error("Register failed:", error.message);
     }
   };
 
